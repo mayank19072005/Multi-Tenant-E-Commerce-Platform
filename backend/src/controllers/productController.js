@@ -1,0 +1,244 @@
+const Product = require('../models/Product');
+const s3 = require('../config/s3');
+const { PutObjectCommand } = require('@aws-sdk/client-s3');
+
+const createProduct = async (req, res) => {
+  try {
+
+    const {
+      title,
+      description,
+      price,
+      stock,
+      category
+    } = req.body;
+
+    const product = await Product.create({
+      title,
+      description,
+      price,
+      stock,
+      category,
+
+      tenant_id: req.user.tenant_id,
+      vendor_id: req.user.id
+    });
+
+    res.status(201).json({
+      success: true,
+      product
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      status: 'active'
+    });
+
+    res.json({
+      success: true,
+      count: products.length,
+      products
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const getVendorProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      tenant_id: req.user.tenant_id
+    });
+
+    res.json({
+      success: true,
+      count: products.length,
+      products
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findOne({
+      _id: req.params.id,
+      tenant_id: req.user.tenant_id
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        message: 'Product Not Found'
+      });
+    }
+
+    Object.assign(product, req.body);
+    await product.save();
+
+    res.json({
+      success: true,
+      product
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findOne({
+      _id: req.params.id,
+      tenant_id: req.user.tenant_id
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        message: 'Product Not Found'
+      });
+    }
+
+    await product.deleteOne();
+
+    res.json({
+      success: true,
+      message: 'Product Deleted'
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const searchProducts = async (req, res) => {
+  try {
+    const keyword = req.query.keyword || '';
+
+    const products = await Product.find({
+      title: {
+        $regex: keyword,
+        $options: 'i'
+      },
+      status: 'active'
+    });
+
+    res.json({
+      success: true,
+      products
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const uploadProductImage = async (req, res) => {
+  try {
+
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({
+        message: 'No File Uploaded'
+      });
+    }
+
+    const fileName =
+      `${Date.now()}-${file.originalname}`;
+
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype
+      })
+    );
+
+    const imageUrl =
+      `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+    res.json({
+      success: true,
+      imageUrl
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+const uploadProductImages = async (req, res) => {
+  try {
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        message: 'No Files Uploaded'
+      });
+    }
+
+    const uploadPromises = files.map(async (file) => {
+      const fileName = `${Date.now()}-${file.originalname}`;
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: fileName,
+          Body: file.buffer,
+          ContentType: file.mimetype
+        })
+      );
+      return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    });
+
+    const imageUrls = await Promise.all(uploadPromises);
+
+    res.json({
+      success: true,
+      imageUrls
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+module.exports = {
+  createProduct,
+  getAllProducts,
+  getVendorProducts,
+  updateProduct,
+  deleteProduct,
+  searchProducts,
+  uploadProductImage,
+  uploadProductImages
+};
