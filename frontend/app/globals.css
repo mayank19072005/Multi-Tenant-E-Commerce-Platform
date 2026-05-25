@@ -24,3 +24,26 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Premium Typography for Product Details Page HTML Elements */
+.product-details-panel h1 {
+  font-size: 1.875rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.product-details-panel p {
+  font-size: 1rem;
+  color: #475569;
+  line-height: 1.625;
+  margin-bottom: 1.5rem;
+}
+
+.product-details-panel h2 {
+  font-size: 1.875rem;
+  font-weight: 900;
+  color: #4f46e5;
+  margin-top: 1.5rem;
+}

@@ -7,6 +7,7 @@ const upload = require('../middleware/uploadMiddleware');
 const {
   createProduct,
   getAllProducts,
+  getSingleProduct,
   getVendorProducts,
   updateProduct,
   deleteProduct,
@@ -36,6 +37,10 @@ router.get(
   authorizeRoles('vendor'),
   getVendorProducts
 );
+
+
+// GET SINGLE PRODUCT BY ID
+router.get('/:id', getSingleProduct);
 
 
 // CREATE PRODUCT

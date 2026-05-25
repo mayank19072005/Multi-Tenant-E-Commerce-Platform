@@ -9,6 +9,10 @@ const app = express();
 
 app.use(cors());
 app.use(helmet());
+
+const orderRoutes = require('./routes/orderRoutes');
+app.use('/api/orders', orderRoutes);
+
 app.use(express.json());
 
 const testRoutes = require('./routes/testRoutes');

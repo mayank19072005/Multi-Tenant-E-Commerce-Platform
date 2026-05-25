@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema(
       default: null
     },
 
+    password: {
+      type: String,
+      default: null
+    },
+
     status: {
       type: String,
       enum: ['active', 'suspended'],

@@ -57,6 +57,38 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+const getSingleProduct = async (req, res) => {
+
+  try {
+
+    const product =
+      await Product.findById(req.params.id);
+
+    if (!product) {
+
+      return res.status(404).json({
+        message: 'Product not found'
+      });
+
+    }
+
+    res.json({
+      success: true,
+      product
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
+
 const getVendorProducts = async (req, res) => {
   try {
     const products = await Product.find({
@@ -235,6 +267,7 @@ const uploadProductImages = async (req, res) => {
 module.exports = {
   createProduct,
   getAllProducts,
+  getSingleProduct,
   getVendorProducts,
   updateProduct,
   deleteProduct,

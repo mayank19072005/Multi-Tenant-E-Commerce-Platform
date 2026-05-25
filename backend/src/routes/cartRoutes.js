@@ -3,7 +3,8 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  addToCart
+  addToCart,
+  getCart
 } = require('../controllers/cartController');
 
 const {
@@ -14,6 +15,12 @@ router.post(
   '/add',
   protect,
   addToCart
+);
+
+router.get(
+  '/',
+  protect,
+  getCart
 );
 
 module.exports = router;
