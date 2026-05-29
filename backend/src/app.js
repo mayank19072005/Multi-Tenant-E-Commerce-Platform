@@ -55,4 +55,12 @@ const cartRoutes = require('./routes/cartRoutes');
 
 app.use('/api/cart', cartRoutes);
 
+const reviewRoutes =
+  require('./routes/reviewRoutes');
+
+app.use(
+  '/api/reviews',
+  reviewRoutes
+);
+
 module.exports = app;
