@@ -39,6 +39,10 @@ const vendorRoutes = require('./routes/vendorRoutes');
 
 app.use('/api/vendors', vendorRoutes);
 
+const adminRoutes = require('./routes/adminRoutes');
+
+app.use('/api/admin', adminRoutes);
+
 const productRoutes = require('./routes/productRoutes');
 
 app.use('/api/products', productRoutes);

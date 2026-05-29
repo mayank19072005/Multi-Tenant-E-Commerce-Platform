@@ -78,7 +78,7 @@ export default function OrdersPage() {
       }
       // If no orders in database, keep the initialized mock orders
     } catch (err) {
-      console.error('Error fetching orders:', err);
+      console.warn('Error fetching orders (offline fallback active):', err.message || err);
       // Keep mock orders on fetch error to avoid empty screen
     } finally {
       setLoading(false);

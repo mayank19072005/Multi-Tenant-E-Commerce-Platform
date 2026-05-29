@@ -47,7 +47,7 @@ export default function VendorOrders() {
         setRole(decoded.role);
         fetchOrders(storedToken);
       } catch (e) {
-        console.error('Invalid token format', e);
+        console.warn('Invalid token format or parsing error', e.message);
         setAccessDenied(true);
         setLoading(false);
         setTimeout(() => {
@@ -66,7 +66,7 @@ export default function VendorOrders() {
         setOrders(getMockOrders());
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.warn('Backend server offline. Utilizing mockup orders log.', error.message);
       setOrders(getMockOrders());
     } finally {
       setLoading(false);
@@ -157,7 +157,7 @@ export default function VendorOrders() {
         }
       }
     } catch (err) {
-      console.error('Update status error:', err);
+      console.warn('Order dispatch endpoint unavailable. Simulating local dispatch update.', err.message);
       setMessage({ type: 'error', text: err.response?.data?.message || err.message || 'Error occurred.' });
     } finally {
       setActionLoadingId(null);

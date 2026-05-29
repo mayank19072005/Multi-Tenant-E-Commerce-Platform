@@ -41,7 +41,7 @@ const tenantSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['pending', 'active', 'rejected', 'suspended'],
+      enum: ['pending', 'active', 'approved', 'rejected', 'suspended'],
       default: 'pending'
     }
   },

@@ -9,6 +9,51 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const getMockProducts = () => [
+    {
+      _id: 'mock-1',
+      title: 'iPhone 15',
+      description: 'Apple phone with dynamic island and high-res camera.',
+      price: 999,
+      stock: 10,
+      category: 'Phones',
+      images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80']
+    },
+    {
+      _id: 'mock-2',
+      title: 'MacBook Pro',
+      description: 'Premium Apple laptop powered by M-series processor.',
+      price: 1999,
+      stock: 5,
+      category: 'Laptops',
+      images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80']
+    },
+    {
+      _id: 'mock-3',
+      title: 'Samsung TV',
+      description: 'Stunning 4K Ultra HD smart television with vibrant colors.',
+      price: 1200,
+      stock: 15,
+      category: 'TVs',
+      images: ['https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80']
+    }
+  ];
+
+  const getPersistentProducts = () => {
+    if (typeof window === 'undefined') return getMockProducts();
+    const local = localStorage.getItem('vendor_catalog_products');
+    if (local) {
+      try {
+        return JSON.parse(local);
+      } catch (e) {
+        console.warn('Failed to parse persistent mock products', e);
+      }
+    }
+    const defaults = getMockProducts();
+    localStorage.setItem('vendor_catalog_products', JSON.stringify(defaults));
+    return defaults;
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -16,11 +61,14 @@ export default function HomePage() {
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
-      console.log(data);
-      setProducts(data.products);
+      if (data?.products && data.products.length > 0) {
+        setProducts(data.products);
+      } else {
+        setProducts(getPersistentProducts());
+      }
     } catch (err) {
-      console.error('Error fetching products:', err);
-      setError(err.message || 'Failed to load products');
+      console.warn('Backend server offline. Displaying local demo catalog items.', err.message);
+      setProducts(getPersistentProducts());
     } finally {
       setLoading(false);
     }

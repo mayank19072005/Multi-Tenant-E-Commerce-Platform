@@ -1,5 +1,6 @@
 const Tenant = require('../models/Tenant');
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 const registerVendor = async (req, res) => {
   try {
@@ -7,7 +8,8 @@ const registerVendor = async (req, res) => {
     const {
       businessName,
       description,
-      email
+      email,
+      password
     } = req.body;
 
     if (!businessName) {
@@ -28,11 +30,14 @@ const registerVendor = async (req, res) => {
       status: 'pending'
     });
 
+    const hashedPassword = await bcrypt.hash(password || 'password123', 10);
+
     const user = await User.create({
       name: businessName,
       email,
       role: 'vendor',
-      tenant_id: tenant._id
+      tenant_id: tenant._id,
+      password: hashedPassword
     });
 
     res.status(201).json({

@@ -10,8 +10,46 @@ const createProduct = async (req, res) => {
       description,
       price,
       stock,
-      category
+      category,
+      images
     } = req.body;
+
+    let tenantId = req.user.tenant_id;
+    if (!tenantId) {
+      const User = require('../models/User');
+      const user = await User.findById(req.user.id);
+      if (user) {
+        tenantId = user.tenant_id;
+      }
+    }
+
+    if (!tenantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tenant ID is required but was not found for this vendor user.'
+      });
+    }
+
+    // Restrict product creation: Only approved (or active) vendors can create products
+    const Tenant = require('../models/Tenant');
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tenant not found.'
+      });
+    }
+
+    if (
+      tenant.status !== 'approved'
+    ) {
+
+      return res.status(403).json({
+        message:
+          'Vendor Not Approved'
+      });
+
+    }
 
     const product = await Product.create({
       title,
@@ -19,8 +57,9 @@ const createProduct = async (req, res) => {
       price,
       stock,
       category,
+      images: images || [],
 
-      tenant_id: req.user.tenant_id,
+      tenant_id: tenantId,
       vendor_id: req.user.id
     });
 
