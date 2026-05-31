@@ -11,7 +11,7 @@ export default function HomePage() {
 
   const getMockProducts = () => [
     {
-      _id: 'mock-1',
+      _id: '685a123456789abcdef12345',
       title: 'iPhone 15',
       description: 'Apple phone with dynamic island and high-res camera.',
       price: 999,
@@ -20,7 +20,7 @@ export default function HomePage() {
       images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80']
     },
     {
-      _id: 'mock-2',
+      _id: '685a123456789abcdef12346',
       title: 'MacBook Pro',
       description: 'Premium Apple laptop powered by M-series processor.',
       price: 1999,
@@ -29,7 +29,7 @@ export default function HomePage() {
       images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80']
     },
     {
-      _id: 'mock-3',
+      _id: '685a123456789abcdef12347',
       title: 'Samsung TV',
       description: 'Stunning 4K Ultra HD smart television with vibrant colors.',
       price: 1200,
@@ -38,6 +38,7 @@ export default function HomePage() {
       images: ['https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80']
     }
   ];
+
 
   const getPersistentProducts = () => {
     if (typeof window === 'undefined') return getMockProducts();

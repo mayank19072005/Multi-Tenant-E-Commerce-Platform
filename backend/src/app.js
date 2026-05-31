@@ -63,4 +63,14 @@ app.use(
   reviewRoutes
 );
 
+const vendorOrderRoutes =
+  require(
+    "./routes/vendorOrderRoutes"
+  );
+
+app.use(
+  "/api/vendor-orders",
+  vendorOrderRoutes
+);
+
 module.exports = app;

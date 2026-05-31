@@ -92,7 +92,7 @@ export default function VendorOrders() {
       ],
       total_amount: 999,
       payment_status: 'paid',
-      order_status: 'processing'
+      status: 'confirmed'
     },
     {
       _id: '1022',
@@ -112,7 +112,7 @@ export default function VendorOrders() {
       ],
       total_amount: 3998,
       payment_status: 'paid',
-      order_status: 'shipped'
+      status: 'shipped'
     },
     {
       _id: '1023',
@@ -132,7 +132,7 @@ export default function VendorOrders() {
       ],
       total_amount: 1200,
       payment_status: 'paid',
-      order_status: 'delivered'
+      status: 'delivered'
     }
   ];
 
@@ -144,7 +144,7 @@ export default function VendorOrders() {
     try {
       if (orderId.length <= 4) {
         // Mock update handler
-        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
         setMessage({ type: 'success', text: `Mock order #${orderId} marked as ${newStatus}!` });
       } else {
         // Real API handler
@@ -297,12 +297,14 @@ export default function VendorOrders() {
                       {/* Order status badge */}
                       <td className="py-5 px-6">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black capitalize ${
-                          order.order_status === 'delivered' ? 'bg-emerald-50 text-emerald-700' :
-                          order.order_status === 'shipped' ? 'bg-indigo-50 text-indigo-700' :
-                          order.order_status === 'processing' || order.order_status === 'placed' ? 'bg-amber-50 text-amber-700' :
-                          'bg-rose-50 text-rose-700'
+                          order.status === 'delivered' ? 'bg-emerald-50 text-emerald-700' :
+                          order.status === 'shipped' ? 'bg-indigo-50 text-indigo-700' :
+                          order.status === 'packed' ? 'bg-blue-50 text-blue-700' :
+                          order.status === 'confirmed' ? 'bg-sky-50 text-sky-700' :
+                          order.status === 'cancelled' ? 'bg-rose-50 text-rose-700' :
+                          'bg-amber-50 text-amber-700'
                         }`}>
-                          {order.order_status}
+                          {order.status}
                         </span>
                       </td>
 
@@ -313,12 +315,13 @@ export default function VendorOrders() {
                             <div className="h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
                             <select
-                              value={order.order_status}
+                              value={order.status}
                               onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
                               className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition cursor-pointer"
                             >
-                              <option value="placed">Placed</option>
-                              <option value="processing">Processing</option>
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
+                              <option value="packed">Packed</option>
                               <option value="shipped">Shipped</option>
                               <option value="delivered">Delivered</option>
                               <option value="cancelled">Cancelled</option>

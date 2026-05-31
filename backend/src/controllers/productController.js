@@ -30,23 +30,22 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // Restrict product creation: Only approved (or active) vendors can create products
     const Tenant = require('../models/Tenant');
-    const tenant = await Tenant.findById(tenantId);
-    if (!tenant) {
-      return res.status(404).json({
-        success: false,
-        message: 'Tenant not found.'
-      });
-    }
+    const tenant =
+      await Tenant.findById(
+        req.user.tenant_id
+      );
 
     if (
-      tenant.status !== 'approved'
+      tenant.status !==
+      'approved'
     ) {
 
       return res.status(403).json({
+
         message:
-          'Vendor Not Approved'
+          'Vendor Not Approved Yet'
+
       });
 
     }

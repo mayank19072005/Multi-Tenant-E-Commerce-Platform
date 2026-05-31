@@ -11,11 +11,11 @@ export default function OrdersPage() {
       createdAt: '2026-05-22T11:00:00Z',
       total_amount: 999,
       payment_status: 'paid',
-      order_status: 'processing',
+      status: 'confirmed',
       products: [
         {
           product_id: {
-            _id: 'mock-iphone',
+            _id: '685a123456789abcdef12345',
             title: 'iPhone 15',
             price: 999,
             category: 'Phones',
@@ -232,13 +232,19 @@ export default function OrdersPage() {
 
                   {/* Order Status Badge */}
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset ${
-                    order.order_status === 'delivered'
+                    order.status === 'delivered'
                       ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10'
-                      : order.order_status === 'cancelled'
+                      : order.status === 'cancelled'
                       ? 'bg-rose-50 text-rose-700 ring-rose-600/10'
-                      : 'bg-indigo-50 text-indigo-700 ring-indigo-600/10'
+                      : order.status === 'shipped'
+                      ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/10'
+                      : order.status === 'packed'
+                      ? 'bg-blue-50 text-blue-700 ring-blue-600/10'
+                      : order.status === 'confirmed'
+                      ? 'bg-sky-50 text-sky-700 ring-sky-600/10'
+                      : 'bg-amber-50 text-amber-700 ring-amber-600/20'
                   }`}>
-                    {order.order_status ? order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1) : 'Placed'}
+                    {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
                   </span>
                 </div>
               </div>

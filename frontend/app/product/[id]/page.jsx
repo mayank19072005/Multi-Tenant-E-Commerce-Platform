@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
+import Link from 'next/link';
 import { getSingleProduct } from '../../../services/productService';
 import { addToCart }
   from '../../../services/cartService';
@@ -66,20 +67,87 @@ export default function ProductPage({ params }) {
     }
   };
 
+  const getMockProducts = () => [
+    {
+      _id: '685a123456789abcdef12345',
+      title: 'iPhone 15',
+      description: 'Apple phone with dynamic island and high-res camera.',
+      price: 999,
+      stock: 10,
+      category: 'Phones',
+      images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80']
+    },
+    {
+      _id: '685a123456789abcdef12346',
+      title: 'MacBook Pro',
+      description: 'Premium Apple laptop powered by M-series processor.',
+      price: 1999,
+      stock: 5,
+      category: 'Laptops',
+      images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80']
+    },
+    {
+      _id: '685a123456789abcdef12347',
+      title: 'Samsung TV',
+      description: 'Stunning 4K Ultra HD smart television with vibrant colors.',
+      price: 1200,
+      stock: 15,
+      category: 'TVs',
+      images: ['https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80']
+    }
+  ];
+
   useEffect(() => {
     fetchProduct();
   }, []);
 
   const fetchProduct = async () => {
     try {
-      // Gracefully unwrap promise-based params for Next.js 15+ support while keeping the data.product state setter
       const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+      if (!resolvedParams?.id) return;
+      
       const data = await getSingleProduct(resolvedParams.id);
-      setProduct(data.product);
+      if (data && data.success && data.product) {
+        setProduct(data.product);
+      } else {
+        triggerFallback(resolvedParams.id);
+      }
     } catch (error) {
-      console.log(error);
+      console.log('Backend fetch failed or product not found. Trying fallback...', error);
+      const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+      triggerFallback(resolvedParams?.id);
     }
   };
+
+  const triggerFallback = (targetId) => {
+    if (!targetId) return;
+    
+    // Check localStorage catalog
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('vendor_catalog_products');
+      if (local) {
+        try {
+          const localProducts = JSON.parse(local);
+          const found = localProducts.find(p => p._id === targetId);
+          if (found) {
+            setProduct(found);
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to parse localStorage products in product page', e);
+        }
+      }
+    }
+
+    // Check hardcoded defaults
+    const foundDefault = getMockProducts().find(p => p._id === targetId);
+    if (foundDefault) {
+      setProduct(foundDefault);
+    } else {
+      setProduct({ notFound: true });
+    }
+  };
+
 
   const handleAddToCart = async () => {
 
@@ -118,6 +186,24 @@ export default function ProductPage({ params }) {
   if (!product) {
     return <p className="p-8 text-center text-slate-500 font-medium">Loading...</p>;
   }
+
+  if (product.notFound) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-24 text-center">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 mb-6 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-8 w-8 text-rose-600">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-black text-slate-900 mb-2">Product Not Found</h2>
+        <p className="text-sm text-slate-500 mb-6 font-semibold">The product you are looking for does not exist or has been removed.</p>
+        <Link href="/" className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-6 font-bold text-white shadow-md transition hover:bg-slate-800">
+          Back to Storefront
+        </Link>
+      </div>
+    );
+  }
+
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">

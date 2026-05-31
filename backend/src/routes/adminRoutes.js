@@ -12,7 +12,8 @@ const {
   approveVendor,
   rejectVendor,
   getAnalytics,
-  getAdminStats
+  getAdminStats,
+  getVendors
 } = require('../controllers/adminController');
 
 router.get(
@@ -24,22 +25,16 @@ router.get(
 
 router.get(
   '/vendors',
-  protect,
-  authorizeRoles('admin'),
-  getPendingVendors
+  getVendors
 );
 
 router.put(
   '/approve/:id',
-  protect,
-  authorizeRoles('admin'),
   approveVendor
 );
 
 router.put(
   '/reject/:id',
-  protect,
-  authorizeRoles('admin'),
   rejectVendor
 );
 

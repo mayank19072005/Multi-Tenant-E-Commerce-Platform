@@ -116,7 +116,7 @@ const webhookHandler = async (req, res) => {
         products: orderData.products,
         total_amount: orderData.total_amount,
         payment_status: 'paid',
-        order_status: 'placed'
+        status: 'pending'
       });
 
       console.log('Order saved successfully:', order._id);
@@ -181,7 +181,7 @@ const getOrders = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'];
 
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
@@ -214,7 +214,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    order.order_status = status;
+    order.status = status;
     await order.save();
 
     res.json({

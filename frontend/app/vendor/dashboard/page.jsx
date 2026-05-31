@@ -113,7 +113,7 @@ export default function VendorDashboard() {
 
   const getMockProducts = () => [
     {
-      _id: 'mock-1',
+      _id: '685a123456789abcdef12345',
       title: 'iPhone 15',
       description: 'Apple phone with dynamic island and high-res camera.',
       price: 999,
@@ -122,7 +122,7 @@ export default function VendorDashboard() {
       images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80']
     },
     {
-      _id: 'mock-2',
+      _id: '685a123456789abcdef12346',
       title: 'MacBook Pro',
       description: 'Premium Apple laptop powered by M-series processor.',
       price: 1999,
@@ -131,7 +131,7 @@ export default function VendorDashboard() {
       images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80']
     },
     {
-      _id: 'mock-3',
+      _id: '685a123456789abcdef12347',
       title: 'Samsung TV',
       description: 'Stunning 4K Ultra HD smart television with vibrant colors.',
       price: 1200,
@@ -190,7 +190,7 @@ export default function VendorDashboard() {
       ],
       total_amount: 999,
       payment_status: 'paid',
-      order_status: 'processing',
+      status: 'confirmed',
       createdAt: new Date().toISOString()
     },
     {
@@ -201,7 +201,7 @@ export default function VendorDashboard() {
       ],
       total_amount: 3998,
       payment_status: 'paid',
-      order_status: 'shipped',
+      status: 'shipped',
       createdAt: new Date(Date.now() - 86400000).toISOString()
     },
     {
@@ -212,7 +212,7 @@ export default function VendorDashboard() {
       ],
       total_amount: 1200,
       payment_status: 'paid',
-      order_status: 'delivered',
+      status: 'delivered',
       createdAt: new Date(Date.now() - 172800000).toISOString()
     }
   ];
@@ -238,7 +238,7 @@ export default function VendorDashboard() {
 
       // Determine Onboarding Step Dynamically based on database state
       if (fetchedProducts.length > 3) {
-        if (fetchedOrders.length > 3 || fetchedOrders.some(o => o.order_status !== 'placed')) {
+        if (fetchedOrders.length > 3 || fetchedOrders.some(o => o.status !== 'pending')) {
           setCurrentStep(4); // Vendor Receives/Manages Orders
         } else {
           setCurrentStep(3); // Customers Buy Products
@@ -407,7 +407,7 @@ export default function VendorDashboard() {
     };
 
     try {
-      if (editingProduct._id.startsWith('mock-')) {
+      if (editingProduct._id.startsWith('mock-') || editingProduct._id.startsWith('685a')) {
         const updatedList = updatePersistentProduct(editingProduct._id, updatedFields);
         setProducts(updatedList);
         setMessage({ type: 'success', text: 'Product updated successfully!' });
@@ -446,7 +446,7 @@ export default function VendorDashboard() {
     setActionLoadingId(productId);
 
     try {
-      if (productId.startsWith('mock-')) {
+      if (productId.startsWith('mock-') || productId.startsWith('685a')) {
         const updatedList = updatePersistentProduct(productId, { stock: newStock });
         setProducts(updatedList);
         setTimeout(() => {
@@ -476,7 +476,7 @@ export default function VendorDashboard() {
   const handleDeleteConfirm = async () => {
     setDeleteLoading(true);
     try {
-      if (deletingProductId.startsWith('mock-')) {
+      if (deletingProductId.startsWith('mock-') || deletingProductId.startsWith('685a')) {
         const updatedList = deletePersistentProduct(deletingProductId);
         setProducts(updatedList);
         calculateStats(updatedList, orders);
@@ -507,13 +507,13 @@ export default function VendorDashboard() {
     setActionLoadingId(orderId);
     try {
       if (orderId.length <= 4) {
-        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
-        calculateStats(products, orders.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+        calculateStats(products, orders.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
       } else {
         const result = await updateOrderStatus(orderId, newStatus, token);
         if (result.success) {
-          setOrders(prev => prev.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
-          calculateStats(products, orders.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
+          setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+          calculateStats(products, orders.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
         } else {
           throw new Error('Status update failed');
         }
@@ -521,12 +521,43 @@ export default function VendorDashboard() {
     } catch (err) {
       console.warn('Order dispatch endpoint unavailable. Simulating local tracking change.', err.message);
       // Fallback local status change
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
-      calculateStats(products, orders.map(o => o._id === orderId ? { ...o, order_status: newStatus } : o));
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+      calculateStats(products, orders.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
     } finally {
       setActionLoadingId(null);
     }
   };
+
+  const updateStatus =
+    async (
+      orderId,
+      status
+    ) => {
+
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status } : o));
+
+      await fetch(
+
+        `http://localhost:5000/api/vendor-orders/${orderId}/status`,
+
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            status
+          })
+
+        }
+
+      );
+
+    };
+
 
   // Filters and Searching Logic
   const filteredProducts = products.filter(p => {
@@ -540,7 +571,7 @@ export default function VendorDashboard() {
     const matchesSearch = o.customer_id?.name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
                           o.customer_id?.email?.toLowerCase().includes(orderSearch.toLowerCase()) ||
                           o._id.includes(orderSearch);
-    const matchesStatus = orderStatusFilter === '' || o.order_status === orderStatusFilter;
+    const matchesStatus = orderStatusFilter === '' || o.status === orderStatusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -1162,12 +1193,14 @@ export default function VendorDashboard() {
                           {/* Order Dispatch status */}
                           <td className="py-5 px-6">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black capitalize border ${
-                              order.order_status === 'delivered' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/30' :
-                              order.order_status === 'shipped' ? 'bg-indigo-950/20 text-indigo-400 border-indigo-900/30' :
-                              order.order_status === 'processing' || order.order_status === 'placed' ? 'bg-amber-950/20 text-amber-500 border-amber-900/30' :
-                              'bg-rose-950/20 text-rose-500 border-rose-900/30'
+                              order.status === 'delivered' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/30' :
+                              order.status === 'shipped' ? 'bg-indigo-950/20 text-indigo-400 border-indigo-900/30' :
+                              order.status === 'packed' ? 'bg-blue-950/20 text-blue-400 border-blue-900/30' :
+                              order.status === 'confirmed' ? 'bg-sky-950/20 text-sky-400 border-sky-900/30' :
+                              order.status === 'cancelled' ? 'bg-rose-950/20 text-rose-500 border-rose-900/30' :
+                              'bg-amber-950/20 text-amber-500 border-amber-900/30'
                             }`}>
-                              {order.order_status}
+                              {order.status}
                             </span>
                           </td>
 
@@ -1177,15 +1210,20 @@ export default function VendorDashboard() {
                               <div className="h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin ml-auto"></div>
                             ) : (
                               <select
-                                value={order.order_status}
-                                onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
+                                value={order.status}
+                                onChange={(e) =>
+                                  updateStatus(
+                                    order._id,
+                                    e.target.value
+                                  )
+                                }
                                 className="px-3 py-1.5 bg-slate-950 border border-slate-900 rounded-xl text-[10px] font-extrabold text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
                               >
-                                <option value="placed">Placed</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
+                                <option>pending</option>
+                                <option>confirmed</option>
+                                <option>packed</option>
+                                <option>shipped</option>
+                                <option>delivered</option>
                               </select>
                             )}
                           </td>
